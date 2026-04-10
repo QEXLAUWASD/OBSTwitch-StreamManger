@@ -144,7 +144,7 @@ bool loadExcludedProcesses(const std::string &baseDir, AppState &state)
 
 	state.excludedNames.clear();
 	const QJsonArray excludeNames = obj["exclude_process_names"].toArray();
-	for (const auto &v : excludeNames) {
+	for (const auto v : excludeNames) {
 		std::string name = strToLower(v.toString().toStdString());
 		if (!name.empty()) {
 			state.excludedNames.insert(name);
@@ -153,7 +153,7 @@ bool loadExcludedProcesses(const std::string &baseDir, AppState &state)
 
 	state.excludedPrefixes.clear();
 	const QJsonArray excludePrefixes = obj["exclude_prefixes"].toArray();
-	for (const auto &v : excludePrefixes) {
+	for (const auto v : excludePrefixes) {
 		std::string prefix = strToLower(v.toString().toStdString());
 		if (!prefix.empty()) {
 			state.excludedPrefixes.push_back(prefix);
