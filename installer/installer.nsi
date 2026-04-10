@@ -83,7 +83,7 @@ Section "!${PRODUCT_NAME} Plugin" SecPlugin
   ; --- Qt TLS backend (Schannel) – present only when Qt HTTPS is enabled --
   IfFileExists "${BUILD_DIR}\${PLUGIN_NAME}\bin\64bit\tls\qschannelbackend.dll" 0 +3
     SetOutPath "$INSTDIR\obs-plugins\64bit\tls"
-    File "${BUILD_DIR}\${PLUGIN_NAME}\bin\64bit\tls\qschannelbackend.dll"
+    File /nonfatal "${BUILD_DIR}\${PLUGIN_NAME}\bin\64bit\tls\qschannelbackend.dll"
 
   ; --- Locale data ---------------------------------------------------------
   SetOutPath "$INSTDIR\data\obs-plugins\${PLUGIN_NAME}\locale"
