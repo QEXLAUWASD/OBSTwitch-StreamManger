@@ -67,6 +67,17 @@ function Package {
     }
     Compress-Archive -Force @CompressArgs
     Log-Group
+
+    Log-Group "Copying standalone DLL..."
+    $DllSource = "${ProjectRoot}/release/${Configuration}/${ProductName}/bin/64bit/${ProductName}.dll"
+    $DllDest = "${ProjectRoot}/release/${OutputName}.dll"
+    if (Test-Path $DllSource) {
+        Copy-Item -Path $DllSource -Destination $DllDest -Force
+        Log-Information "Copied DLL to ${DllDest}"
+    } else {
+        Log-Warning "DLL not found at ${DllSource}, skipping standalone DLL copy"
+    }
+    Log-Group
 }
 
 Package

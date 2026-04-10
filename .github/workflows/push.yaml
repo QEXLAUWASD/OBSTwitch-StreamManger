@@ -72,9 +72,9 @@ jobs:
           commit_hash="${GITHUB_SHA:0:9}"
 
           variants=(
-            'windows-x64;zip|exe'
-            'macos-universal;tar.xz|pkg'
-            'ubuntu-24.04-x86_64;tar.xz|deb|ddeb'
+            'windows-x64;zip|exe|dll'
+            'macos-universal;tar.xz|pkg|dylib'
+            'ubuntu-24.04-x86_64;tar.xz|deb|ddeb|so'
             'sources;tar.xz'
           )
 
@@ -96,7 +96,7 @@ jobs:
           shopt -s extglob
 
           echo "### Checksums" > ${{ github.workspace }}/CHECKSUMS.txt
-          for file in ${{ github.workspace }}/@(*.exe|*.deb|*.ddeb|*.pkg|*.tar.xz|*.zip); do
+          for file in ${{ github.workspace }}/@(*.exe|*.deb|*.ddeb|*.pkg|*.tar.xz|*.zip|*.dll|*.dylib|*.so); do
             echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
           done
 
@@ -105,7 +105,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564
         with:
-          draft: true
+          draft: false
           prerelease: ${{ fromJSON(steps.check.outputs.prerelease) }}
           tag_name: ${{ steps.check.outputs.version }}
           name: ${{ needs.build-project.outputs.pluginName }} ${{ steps.check.outputs.version }}
@@ -113,6 +113,117 @@ jobs:
           files: |
             ${{ github.workspace }}/*.exe
             ${{ github.workspace }}/*.zip
+            ${{ github.workspace }}/*.dll
+            ${{ github.workspace }}/*.dylib
+            ${{ github.workspace }}/*.so
+            ${{ github.workspace }}/*.pkg
+            ${{ github.workspace }}/*.deb
+            ${{ github.workspace }}/*.ddeb
+            ${{ github.workspace }}/*.tar.xz
+
+  auto-release:
+    name: Auto Release 🚀
+    if: github.ref_type == 'branch' && (github.ref_name == 'main' || github.ref_name == 'master')
+    runs-on: ubuntu-24.04
+    needs: build-project
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read Version from buildspec 📋
+        id: version
+        run: |
+          : Read Version from buildspec 📋
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+          version="$(jq -r '.version' buildspec.json)"
+          echo "version=${version}" >> $GITHUB_OUTPUT
+          echo "tag=${version}" >> $GITHUB_OUTPUT
+
+      - name: Check if Release Exists ☑️
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          : Check if Release Exists ☑️
+          if gh release view "${{ steps.version.outputs.tag }}" &>/dev/null; then
+            echo 'exists=true' >> $GITHUB_OUTPUT
+          else
+            echo 'exists=false' >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download Build Artifacts 📥
+        if: fromJSON(steps.check.outputs.exists) == false
+        uses: actions/download-artifact@v4
+        id: download
+
+      - name: Rename Files 🏷️
+        if: fromJSON(steps.check.outputs.exists) == false
+        run: |
+          : Rename Files 🏷️
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+          shopt -s extglob
+          shopt -s nullglob
+
+          root_dir="$(pwd)"
+          commit_hash="${GITHUB_SHA:0:9}"
+
+          variants=(
+            'windows-x64;zip|exe|dll'
+            'macos-universal;tar.xz|pkg|dylib'
+            'ubuntu-24.04-x86_64;tar.xz|deb|ddeb|so'
+            'sources;tar.xz'
+          )
+
+          for variant_data in "${variants[@]}"; do
+            IFS=';' read -r variant suffix <<< "${variant_data}"
+            candidates=(*-${variant}-${commit_hash}/@(*|*-dbgsym).@(${suffix}))
+            for candidate in "${candidates[@]}"; do
+              mv "${candidate}" "${root_dir}"
+            done
+          done
+
+      - name: Generate Checksums 🪪
+        if: fromJSON(steps.check.outputs.exists) == false
+        run: |
+          : Generate Checksums 🪪
+          if [[ "${RUNNER_DEBUG}" ]]; then set -x; fi
+          shopt -s extglob
+
+          echo "### Checksums" > ${{ github.workspace }}/CHECKSUMS.txt
+          for file in ${{ github.workspace }}/@(*.exe|*.deb|*.ddeb|*.pkg|*.tar.xz|*.zip|*.dll|*.dylib|*.so); do
+            echo "    ${file##*/}: $(sha256sum "${file}" | cut -d " " -f 1)" >> ${{ github.workspace }}/CHECKSUMS.txt
+          done
+
+      - name: Tag Commit 🏷️
+        if: fromJSON(steps.check.outputs.exists) == false
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          : Tag Commit 🏷️
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.version.outputs.tag }}" "${GITHUB_SHA}"
+          git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Create Release 🛫
+        if: fromJSON(steps.check.outputs.exists) == false
+        uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564
+        with:
+          draft: false
+          prerelease: false
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ needs.build-project.outputs.pluginName }} ${{ steps.version.outputs.version }}
+          body_path: ${{ github.workspace }}/CHECKSUMS.txt
+          files: |
+            ${{ github.workspace }}/*.exe
+            ${{ github.workspace }}/*.zip
+            ${{ github.workspace }}/*.dll
+            ${{ github.workspace }}/*.dylib
+            ${{ github.workspace }}/*.so
             ${{ github.workspace }}/*.pkg
             ${{ github.workspace }}/*.deb
             ${{ github.workspace }}/*.ddeb

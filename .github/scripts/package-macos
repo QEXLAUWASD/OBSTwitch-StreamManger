@@ -167,6 +167,15 @@ package() {
     popd
   }
 
+  log_group "Copying standalone dylib..."
+  local dylib_src="${project_root}/release/${config}/${product_name}.plugin/Contents/MacOS/${product_name}"
+  if [[ -f ${dylib_src} ]] {
+    cp ${dylib_src} ${project_root}/release/${output_name}.dylib
+  } else {
+    log_error "Plugin binary not found at ${dylib_src}, skipping standalone dylib copy"
+  }
+  log_group
+
   log_group
 }
 
