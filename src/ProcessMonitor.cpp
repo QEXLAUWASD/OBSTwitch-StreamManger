@@ -8,14 +8,13 @@
 #include <cctype>
 
 #ifdef _WIN32
-#	include <windows.h>
-#	include <psapi.h>
+#include <windows.h>
+#include <psapi.h>
 #endif
 
 static std::string strToLower(std::string s)
 {
-	std::transform(s.begin(), s.end(), s.begin(),
-		       [](unsigned char c) { return std::tolower(c); });
+	std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
 	return s;
 }
 
@@ -56,16 +55,13 @@ std::vector<std::string> getRunningProcessNames()
 			continue;
 		}
 
-		HANDLE hProcess =
-			OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-				    FALSE, processIds[i]);
+		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processIds[i]);
 		if (!hProcess) {
 			continue;
 		}
 
 		CHAR procName[MAX_PATH] = {};
-		if (GetModuleBaseNameA(hProcess, nullptr, procName,
-				       MAX_PATH) > 0) {
+		if (GetModuleBaseNameA(hProcess, nullptr, procName, MAX_PATH) > 0) {
 			names.emplace_back(procName);
 		}
 

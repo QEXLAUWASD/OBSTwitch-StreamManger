@@ -12,8 +12,7 @@ class TwitchClient : public QObject {
 	Q_OBJECT
 
 public:
-	TwitchClient(std::string clientId, std::string accessToken,
-		     std::string streamerId, QObject *parent = nullptr);
+	TwitchClient(std::string clientId, std::string accessToken, std::string streamerId, QObject *parent = nullptr);
 
 	TwitchClient(const TwitchClient &) = delete;
 	TwitchClient &operator=(const TwitchClient &) = delete;
@@ -21,8 +20,7 @@ public:
 	TwitchClient &operator=(TwitchClient &&) noexcept = delete;
 	~TwitchClient() override = default;
 
-	void setCredentials(std::string clientId, std::string accessToken,
-			    std::string streamerId);
+	void setCredentials(std::string clientId, std::string accessToken, std::string streamerId);
 
 	bool hasCredentials() const;
 	bool updateStreamTitle(const std::string &title);
@@ -35,5 +33,4 @@ private:
 	QNetworkAccessManager networkManager_;
 };
 
-std::string formatTitle(const std::string &titleTemplate,
-			const std::string &game);
+std::string formatTitle(const std::string &titleTemplate, const std::string &game);

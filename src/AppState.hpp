@@ -21,11 +21,7 @@ struct AppState {
 	std::set<std::string> excludedNames;
 	std::vector<std::string> excludedPrefixes;
 
-	AppState()
-		: baseTemplate(" %game% %date%"),
-		  currentGame("Unknown"),
-		  keepLastWhenNoGame(true),
-		  darkMode(false)
+	AppState() : baseTemplate(" %game% %date%"), currentGame("Unknown"), keepLastWhenNoGame(true), darkMode(false)
 	{
 	}
 };

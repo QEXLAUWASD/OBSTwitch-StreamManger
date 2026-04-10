@@ -24,8 +24,7 @@ static TwitchAutoTitleDialog *dialog = nullptr;
 static void openDialog(void *)
 {
 	if (!dialog) {
-		auto *mainWindow = static_cast<QWidget *>(
-			obs_frontend_get_main_window());
+		auto *mainWindow = static_cast<QWidget *>(obs_frontend_get_main_window());
 		dialog = new TwitchAutoTitleDialog(mainWindow);
 	}
 	dialog->show();
@@ -37,17 +36,13 @@ bool obs_module_load(void)
 {
 	// Register the plugin's own directory so Qt can locate the TLS
 	// plugin (tls/qschannelbackend.dll) shipped alongside this DLL.
-	const char *binPath =
-		obs_get_module_binary_path(obs_current_module());
+	const char *binPath = obs_get_module_binary_path(obs_current_module());
 	if (binPath) {
-		QString pluginDir =
-			QFileInfo(QString::fromUtf8(binPath)).absolutePath();
+		QString pluginDir = QFileInfo(QString::fromUtf8(binPath)).absolutePath();
 		QCoreApplication::addLibraryPath(pluginDir);
 	}
 
-	obs_frontend_add_tools_menu_item(
-		obs_module_text("TwitchAutoTitle.MenuTitle"), openDialog,
-		nullptr);
+	obs_frontend_add_tools_menu_item(obs_module_text("TwitchAutoTitle.MenuTitle"), openDialog, nullptr);
 	return true;
 }
 

@@ -24,11 +24,9 @@ public:
 	explicit TwitchAutoTitleDialog(QWidget *parent = nullptr);
 
 	TwitchAutoTitleDialog(const TwitchAutoTitleDialog &) = delete;
-	TwitchAutoTitleDialog &
-	operator=(const TwitchAutoTitleDialog &) = delete;
+	TwitchAutoTitleDialog &operator=(const TwitchAutoTitleDialog &) = delete;
 	TwitchAutoTitleDialog(TwitchAutoTitleDialog &&) noexcept = delete;
-	TwitchAutoTitleDialog &
-	operator=(TwitchAutoTitleDialog &&) noexcept = delete;
+	TwitchAutoTitleDialog &operator=(TwitchAutoTitleDialog &&) noexcept = delete;
 	~TwitchAutoTitleDialog() override = default;
 
 private slots:
@@ -49,8 +47,7 @@ private:
 	void applyTheme();
 	void refreshMappingsList();
 	void refreshRunningProcessList();
-	void setStatus(const QString &text,
-		       const QString &color = "green");
+	void setStatus(const QString &text, const QString &color = "green");
 	bool ensureCredentials();
 	void checkForUpdate();
 	void doTwitchUpdate(const std::string &game);

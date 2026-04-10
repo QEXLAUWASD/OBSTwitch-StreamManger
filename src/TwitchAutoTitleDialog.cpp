@@ -34,8 +34,7 @@ static std::tuple<int, int, int> parseVersion(const QString &tag)
 	QRegularExpression re(R"((\d+)\.(\d+)\.(\d+))");
 	QRegularExpressionMatch m = re.match(tag);
 	if (m.hasMatch()) {
-		return {m.captured(1).toInt(), m.captured(2).toInt(),
-			m.captured(3).toInt()};
+		return {m.captured(1).toInt(), m.captured(2).toInt(), m.captured(3).toInt()};
 	}
 	return {0, 0, 0};
 }
@@ -61,14 +60,12 @@ TwitchAutoTitleDialog::TwitchAutoTitleDialog(QWidget *parent)
 	loadExcludedProcesses(baseDir_, state_);
 
 	// Hot-reload config.json on external change
-	QString configPath =
-		QString::fromStdString(baseDir_) + "/config.json";
+	QString configPath = QString::fromStdString(baseDir_) + "/config.json";
 	configWatcher_.addPath(configPath);
-	connect(&configWatcher_, &QFileSystemWatcher::fileChanged, this,
-		[this](const QString &) {
-			loadConfig(baseDir_, state_);
-			refreshMappingsList();
-		});
+	connect(&configWatcher_, &QFileSystemWatcher::fileChanged, this, [this](const QString &) {
+		loadConfig(baseDir_, state_);
+		refreshMappingsList();
+	});
 
 	refreshMappingsList();
 	refreshRunningProcessList();
@@ -77,20 +74,16 @@ TwitchAutoTitleDialog::TwitchAutoTitleDialog(QWidget *parent)
 	keepLastCheckbox_->setChecked(state_.keepLastWhenNoGame);
 	applyTheme();
 
-	connect(&gameMonitorTimer_, &QTimer::timeout, this,
-		&TwitchAutoTitleDialog::onGameMonitorTick);
+	connect(&gameMonitorTimer_, &QTimer::timeout, this, &TwitchAutoTitleDialog::onGameMonitorTick);
 	gameMonitorTimer_.start(5000);
 
-	connect(&uiUpdateTimer_, &QTimer::timeout, this,
-		&TwitchAutoTitleDialog::onUiUpdateTick);
+	connect(&uiUpdateTimer_, &QTimer::timeout, this, &TwitchAutoTitleDialog::onUiUpdateTick);
 	uiUpdateTimer_.start(1000);
 
-	connect(&processRefreshTimer_, &QTimer::timeout, this,
-		&TwitchAutoTitleDialog::onProcessRefreshTick);
+	connect(&processRefreshTimer_, &QTimer::timeout, this, &TwitchAutoTitleDialog::onProcessRefreshTick);
 	processRefreshTimer_.start(60'000);
 
-	QTimer::singleShot(3000, this,
-			   &TwitchAutoTitleDialog::checkForUpdate);
+	QTimer::singleShot(3000, this, &TwitchAutoTitleDialog::checkForUpdate);
 }
 
 // ---------------------------------------------------------------------------
@@ -105,14 +98,12 @@ void TwitchAutoTitleDialog::setupUi()
 	auto *topBar = new QHBoxLayout;
 	topBar->addStretch();
 	darkModeCheckbox_ = new QCheckBox("Dark Mode", this);
-	connect(darkModeCheckbox_, &QCheckBox::toggled, this,
-		&TwitchAutoTitleDialog::onToggleDarkMode);
+	connect(darkModeCheckbox_, &QCheckBox::toggled, this, &TwitchAutoTitleDialog::onToggleDarkMode);
 	topBar->addWidget(darkModeCheckbox_);
 	mainLayout->addLayout(topBar);
 
 	// Current detected game
-	mainLayout->addWidget(
-		new QLabel("Current Detected Game:", this));
+	mainLayout->addWidget(new QLabel("Current Detected Game:", this));
 	currentGameLabel_ = new QLabel("Unknown", this);
 	QFont boldFont = currentGameLabel_->font();
 	boldFont.setBold(true);
@@ -121,8 +112,7 @@ void TwitchAutoTitleDialog::setupUi()
 	mainLayout->addWidget(currentGameLabel_);
 
 	// Configured mappings
-	mainLayout->addWidget(
-		new QLabel("Configured Game \u2192 Process Mappings:", this));
+	mainLayout->addWidget(new QLabel("Configured Game \u2192 Process Mappings:", this));
 	mappingsList_ = new QListWidget(this);
 	mappingsList_->setFixedHeight(130);
 	mainLayout->addWidget(mappingsList_);
@@ -132,12 +122,9 @@ void TwitchAutoTitleDialog::setupUi()
 	auto *reloadBtn = new QPushButton("Reload config.json", this);
 	auto *removeBtn = new QPushButton("Remove Selected", this);
 	auto *exclusionsBtn = new QPushButton("Edit Exclusions", this);
-	connect(reloadBtn, &QPushButton::clicked, this,
-		&TwitchAutoTitleDialog::onReloadConfig);
-	connect(removeBtn, &QPushButton::clicked, this,
-		&TwitchAutoTitleDialog::onRemoveSelected);
-	connect(exclusionsBtn, &QPushButton::clicked, this,
-		&TwitchAutoTitleDialog::onOpenExclusionsEditor);
+	connect(reloadBtn, &QPushButton::clicked, this, &TwitchAutoTitleDialog::onReloadConfig);
+	connect(removeBtn, &QPushButton::clicked, this, &TwitchAutoTitleDialog::onRemoveSelected);
+	connect(exclusionsBtn, &QPushButton::clicked, this, &TwitchAutoTitleDialog::onOpenExclusionsEditor);
 	btnRow->addWidget(reloadBtn);
 	btnRow->addWidget(removeBtn);
 	btnRow->addWidget(exclusionsBtn);
@@ -163,10 +150,8 @@ void TwitchAutoTitleDialog::setupUi()
 	auto *procBtnRow = new QHBoxLayout;
 	auto *refreshProcBtn = new QPushButton("Refresh", this);
 	auto *autoSelectBtn = new QPushButton("Auto-select match", this);
-	connect(refreshProcBtn, &QPushButton::clicked, this,
-		&TwitchAutoTitleDialog::onRefreshProcessList);
-	connect(autoSelectBtn, &QPushButton::clicked, this,
-		&TwitchAutoTitleDialog::onAutoSelectProcess);
+	connect(refreshProcBtn, &QPushButton::clicked, this, &TwitchAutoTitleDialog::onRefreshProcessList);
+	connect(autoSelectBtn, &QPushButton::clicked, this, &TwitchAutoTitleDialog::onAutoSelectProcess);
 	procBtnRow->addWidget(refreshProcBtn);
 	procBtnRow->addWidget(autoSelectBtn);
 	procCol->addLayout(procBtnRow);
@@ -175,17 +160,14 @@ void TwitchAutoTitleDialog::setupUi()
 	mainLayout->addWidget(mappingGroup);
 
 	// Custom suffix
-	mainLayout->addWidget(new QLabel(
-		"Custom Text (will be appended to the end of the title):",
-		this));
+	mainLayout->addWidget(new QLabel("Custom Text (will be appended to the end of the title):", this));
 	customTextEdit_ = new QLineEdit(this);
 	mainLayout->addWidget(customTextEdit_);
 
 	// Keep last checkbox
-	keepLastCheckbox_ = new QCheckBox(
-		"When no game detected, keep last title "
-		"(do not switch to Just Chatting)",
-		this);
+	keepLastCheckbox_ = new QCheckBox("When no game detected, keep last title "
+					  "(do not switch to Just Chatting)",
+					  this);
 	connect(keepLastCheckbox_, &QCheckBox::toggled, this, [this](bool v) {
 		state_.keepLastWhenNoGame = v;
 		saveConfig(baseDir_, state_);
@@ -194,14 +176,10 @@ void TwitchAutoTitleDialog::setupUi()
 
 	// Action buttons
 	auto *actionRow = new QHBoxLayout;
-	auto *addUpdateBtn =
-		new QPushButton("Add / Update Mapping", this);
-	auto *manualUpdateBtn =
-		new QPushButton("Manual Update Title/Category", this);
-	connect(addUpdateBtn, &QPushButton::clicked, this,
-		&TwitchAutoTitleDialog::onAddOrUpdateMapping);
-	connect(manualUpdateBtn, &QPushButton::clicked, this,
-		&TwitchAutoTitleDialog::onManualUpdate);
+	auto *addUpdateBtn = new QPushButton("Add / Update Mapping", this);
+	auto *manualUpdateBtn = new QPushButton("Manual Update Title/Category", this);
+	connect(addUpdateBtn, &QPushButton::clicked, this, &TwitchAutoTitleDialog::onAddOrUpdateMapping);
+	connect(manualUpdateBtn, &QPushButton::clicked, this, &TwitchAutoTitleDialog::onManualUpdate);
 	actionRow->addWidget(addUpdateBtn);
 	actionRow->addWidget(manualUpdateBtn);
 	mainLayout->addLayout(actionRow);
@@ -219,9 +197,7 @@ bool TwitchAutoTitleDialog::ensureCredentials()
 {
 	auto creds = loadCredentials(baseDir_);
 	if (creds.isValid()) {
-		twitchClient_.setCredentials(creds.clientId,
-					     creds.accessToken,
-					     creds.streamerId);
+		twitchClient_.setCredentials(creds.clientId, creds.accessToken, creds.streamerId);
 		return true;
 	}
 
@@ -239,35 +215,27 @@ bool TwitchAutoTitleDialog::ensureCredentials()
 	layout->addRow("Access Token:", accessTokenEdit);
 	layout->addRow("Streamer ID (User ID):", streamerIdEdit);
 
-	auto *buttons = new QDialogButtonBox(
-		QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
-		&credDialog);
+	auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &credDialog);
 	layout->addRow(buttons);
 
-	connect(buttons, &QDialogButtonBox::accepted, &credDialog,
-		&QDialog::accept);
-	connect(buttons, &QDialogButtonBox::rejected, &credDialog,
-		&QDialog::reject);
+	connect(buttons, &QDialogButtonBox::accepted, &credDialog, &QDialog::accept);
+	connect(buttons, &QDialogButtonBox::rejected, &credDialog, &QDialog::reject);
 
 	if (credDialog.exec() != QDialog::Accepted) {
 		return false;
 	}
 
 	TwitchCredentials newCreds;
-	newCreds.clientId =
-		clientIdEdit->text().trimmed().toStdString();
-	newCreds.accessToken =
-		accessTokenEdit->text().trimmed().toStdString();
-	newCreds.streamerId =
-		streamerIdEdit->text().trimmed().toStdString();
+	newCreds.clientId = clientIdEdit->text().trimmed().toStdString();
+	newCreds.accessToken = accessTokenEdit->text().trimmed().toStdString();
+	newCreds.streamerId = streamerIdEdit->text().trimmed().toStdString();
 
 	if (!newCreds.isValid()) {
 		return false;
 	}
 
 	saveCredentials(baseDir_, newCreds);
-	twitchClient_.setCredentials(newCreds.clientId, newCreds.accessToken,
-				     newCreds.streamerId);
+	twitchClient_.setCredentials(newCreds.clientId, newCreds.accessToken, newCreds.streamerId);
 	return true;
 }
 
@@ -282,8 +250,7 @@ void TwitchAutoTitleDialog::onGameMonitorTick()
 	}
 
 	auto detected = getCurrentGame(state_);
-	state_.currentGame =
-		detected.has_value() ? *detected : "Unknown";
+	state_.currentGame = detected.has_value() ? *detected : "Unknown";
 
 	if (detected == lastDetectedGame_) {
 		return;
@@ -300,8 +267,7 @@ void TwitchAutoTitleDialog::onGameMonitorTick()
 
 void TwitchAutoTitleDialog::onUiUpdateTick()
 {
-	currentGameLabel_->setText(
-		QString::fromStdString(state_.currentGame));
+	currentGameLabel_->setText(QString::fromStdString(state_.currentGame));
 }
 
 void TwitchAutoTitleDialog::onProcessRefreshTick()
@@ -320,17 +286,14 @@ void TwitchAutoTitleDialog::onRemoveSelected()
 {
 	auto selected = mappingsList_->selectedItems();
 	if (selected.isEmpty()) {
-		QMessageBox::information(this, "Select",
-					 "Choose a mapping to remove.");
+		QMessageBox::information(this, "Select", "Choose a mapping to remove.");
 		return;
 	}
 
 	QString item = selected[0]->text();
 	QString game = item.split("->")[0].trimmed();
 
-	auto choice = QMessageBox::question(
-		this, "Confirm",
-		QString("Remove mapping for '%1'?").arg(game));
+	auto choice = QMessageBox::question(this, "Confirm", QString("Remove mapping for '%1'?").arg(game));
 	if (choice != QMessageBox::Yes) {
 		return;
 	}
@@ -338,8 +301,7 @@ void TwitchAutoTitleDialog::onRemoveSelected()
 	if (removeGame(baseDir_, state_, game.toStdString())) {
 		refreshMappingsList();
 	} else {
-		QMessageBox::critical(this, "Error",
-				      "Failed to remove mapping.");
+		QMessageBox::critical(this, "Error", "Failed to remove mapping.");
 	}
 }
 
@@ -350,28 +312,21 @@ void TwitchAutoTitleDialog::onAddOrUpdateMapping()
 	auto selected = processListWidget_->selectedItems();
 
 	if (game.isEmpty()) {
-		QMessageBox::warning(this, "Missing",
-				     "Please provide a Game Name.");
+		QMessageBox::warning(this, "Missing", "Please provide a Game Name.");
 		return;
 	}
 	if (selected.isEmpty()) {
-		QMessageBox::warning(
-			this, "Missing",
-			"Please select a Process from the list.");
+		QMessageBox::warning(this, "Missing", "Please select a Process from the list.");
 		return;
 	}
 
 	QString proc = selected[0]->text().trimmed();
-	bool ok = addOrUpdateGame(baseDir_, state_, game.toStdString(),
-				  proc.toStdString(),
-				  category.toStdString());
+	bool ok = addOrUpdateGame(baseDir_, state_, game.toStdString(), proc.toStdString(), category.toStdString());
 	if (ok) {
 		gameNameEdit_->clear();
 		categoryEdit_->clear();
 		refreshMappingsList();
-		setStatus(QString("Added/Updated: %1 -> %2")
-				  .arg(game)
-				  .arg(proc));
+		setStatus(QString("Added/Updated: %1 -> %2").arg(game).arg(proc));
 	} else {
 		setStatus("Failed to add mapping.", "red");
 	}
@@ -380,20 +335,16 @@ void TwitchAutoTitleDialog::onAddOrUpdateMapping()
 void TwitchAutoTitleDialog::onManualUpdate()
 {
 	auto detected = getCurrentGame(state_);
-	state_.currentGame =
-		detected.has_value() ? *detected : "Unknown";
+	state_.currentGame = detected.has_value() ? *detected : "Unknown";
 
 	if (!detected.has_value() && state_.keepLastWhenNoGame) {
 		setStatus("No game detected; kept last title.", "blue");
 		return;
 	}
 
-	std::string game =
-		detected.has_value() ? *detected : "Just Chatting";
+	std::string game = detected.has_value() ? *detected : "Just Chatting";
 	doTwitchUpdate(game);
-	setStatus(QString("Manual update sent for: %1")
-			  .arg(QString::fromStdString(game)),
-		  "blue");
+	setStatus(QString("Manual update sent for: %1").arg(QString::fromStdString(game)), "blue");
 }
 
 void TwitchAutoTitleDialog::onRefreshProcessList()
@@ -404,15 +355,11 @@ void TwitchAutoTitleDialog::onRefreshProcessList()
 void TwitchAutoTitleDialog::onAutoSelectProcess()
 {
 	int bestMatch = -1;
-	for (int i = 0; i < processListWidget_->count() && bestMatch < 0;
-	     i++) {
-		QString item =
-			processListWidget_->item(i)->text().toLower();
+	for (int i = 0; i < processListWidget_->count() && bestMatch < 0; i++) {
+		QString item = processListWidget_->item(i)->text().toLower();
 		for (const auto &[game, proc] : state_.processNames) {
-			QString mapped =
-				QString::fromStdString(proc).toLower();
-			if (item.contains(mapped) ||
-			    mapped.contains(item)) {
+			QString mapped = QString::fromStdString(proc).toLower();
+			if (item.contains(mapped) || mapped.contains(item)) {
 				bestMatch = i;
 				break;
 			}
@@ -422,13 +369,10 @@ void TwitchAutoTitleDialog::onAutoSelectProcess()
 	if (bestMatch >= 0) {
 		processListWidget_->clearSelection();
 		processListWidget_->setCurrentRow(bestMatch);
-		QMessageBox::information(
-			this, "Auto-select",
-			QString("Selected: %1").arg(
-				processListWidget_->item(bestMatch)->text()));
-	} else {
 		QMessageBox::information(this, "Auto-select",
-					 "No likely match found.");
+					 QString("Selected: %1").arg(processListWidget_->item(bestMatch)->text()));
+	} else {
+		QMessageBox::information(this, "Auto-select", "No likely match found.");
 	}
 }
 
@@ -453,8 +397,7 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 	auto *colsLayout = new QHBoxLayout;
 
 	// --- Left: excluded names ---
-	auto *leftGroup =
-		new QGroupBox("Excluded Process Names", &win);
+	auto *leftGroup = new QGroupBox("Excluded Process Names", &win);
 	auto *leftLayout = new QVBoxLayout(leftGroup);
 	auto *namesLb = new QListWidget(&win);
 	namesLb->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -473,8 +416,7 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 	colsLayout->addWidget(leftGroup);
 
 	// --- Middle: running processes ---
-	auto *midGroup =
-		new QGroupBox("Running Processes (select to add)", &win);
+	auto *midGroup = new QGroupBox("Running Processes (select to add)", &win);
 	auto *midLayout = new QVBoxLayout(midGroup);
 	auto *runningLb = new QListWidget(&win);
 	runningLb->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -482,13 +424,11 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 	auto populateRunning = [&]() {
 		auto procs = getRunningProcessNames();
 		std::sort(procs.begin(), procs.end());
-		procs.erase(std::unique(procs.begin(), procs.end()),
-			    procs.end());
+		procs.erase(std::unique(procs.begin(), procs.end()), procs.end());
 		runningLb->clear();
 		for (const auto &p : procs) {
 			if (!isExcludedProcess(p, state_)) {
-				runningLb->addItem(
-					QString::fromStdString(p));
+				runningLb->addItem(QString::fromStdString(p));
 			}
 		}
 	};
@@ -496,18 +436,15 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 
 	midLayout->addWidget(runningLb);
 	auto *refreshRunBtn = new QPushButton("Refresh", &win);
-	auto *addToNamesBtn =
-		new QPushButton("Add \u2192 Excluded Names", &win);
-	auto *addToPrefixBtn =
-		new QPushButton("Add \u2192 Excluded Prefixes", &win);
+	auto *addToNamesBtn = new QPushButton("Add \u2192 Excluded Names", &win);
+	auto *addToPrefixBtn = new QPushButton("Add \u2192 Excluded Prefixes", &win);
 	midLayout->addWidget(refreshRunBtn);
 	midLayout->addWidget(addToNamesBtn);
 	midLayout->addWidget(addToPrefixBtn);
 	colsLayout->addWidget(midGroup);
 
 	// --- Right: excluded prefixes ---
-	auto *rightGroup =
-		new QGroupBox("Excluded Prefixes (starts-with)", &win);
+	auto *rightGroup = new QGroupBox("Excluded Prefixes (starts-with)", &win);
 	auto *rightLayout = new QVBoxLayout(rightGroup);
 	auto *prefixLb = new QListWidget(&win);
 	prefixLb->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -521,8 +458,7 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 	addPrefixRow->addWidget(prefixEntry);
 	addPrefixRow->addWidget(addPrefixBtn);
 	rightLayout->addLayout(addPrefixRow);
-	auto *removePrefixBtn =
-		new QPushButton("Remove Selected", &win);
+	auto *removePrefixBtn = new QPushButton("Remove Selected", &win);
 	rightLayout->addWidget(removePrefixBtn);
 	colsLayout->addWidget(rightGroup);
 
@@ -553,14 +489,12 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 
 	connect(removeNameBtn, &QPushButton::clicked, &win, [&]() {
 		for (auto *item : namesLb->selectedItems()) {
-			state_.excludedNames.erase(
-				item->text().toStdString());
+			state_.excludedNames.erase(item->text().toStdString());
 			delete item;
 		}
 	});
 
-	connect(refreshRunBtn, &QPushButton::clicked, &win,
-		populateRunning);
+	connect(refreshRunBtn, &QPushButton::clicked, &win, populateRunning);
 
 	connect(addToNamesBtn, &QPushButton::clicked, &win, [&]() {
 		for (auto *item : runningLb->selectedItems()) {
@@ -576,12 +510,9 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 
 	connect(addToPrefixBtn, &QPushButton::clicked, &win, [&]() {
 		for (auto *item : runningLb->selectedItems()) {
-			QString prefix =
-				item->text().split(".")[0].toLower();
+			QString prefix = item->text().split(".")[0].toLower();
 			std::string pref = prefix.toStdString();
-			if (std::find(state_.excludedPrefixes.begin(),
-				      state_.excludedPrefixes.end(),
-				      pref) ==
+			if (std::find(state_.excludedPrefixes.begin(), state_.excludedPrefixes.end(), pref) ==
 			    state_.excludedPrefixes.end()) {
 				state_.excludedPrefixes.push_back(pref);
 				prefixLb->addItem(prefix);
@@ -596,9 +527,8 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 			return;
 		}
 		std::string pref = val.toStdString();
-		if (std::find(state_.excludedPrefixes.begin(),
-			      state_.excludedPrefixes.end(),
-			      pref) == state_.excludedPrefixes.end()) {
+		if (std::find(state_.excludedPrefixes.begin(), state_.excludedPrefixes.end(), pref) ==
+		    state_.excludedPrefixes.end()) {
 			state_.excludedPrefixes.push_back(pref);
 			prefixLb->addItem(val);
 		}
@@ -608,9 +538,7 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 	connect(removePrefixBtn, &QPushButton::clicked, &win, [&]() {
 		for (auto *item : prefixLb->selectedItems()) {
 			std::string pref = item->text().toStdString();
-			auto it = std::find(state_.excludedPrefixes.begin(),
-					    state_.excludedPrefixes.end(),
-					    pref);
+			auto it = std::find(state_.excludedPrefixes.begin(), state_.excludedPrefixes.end(), pref);
 			if (it != state_.excludedPrefixes.end()) {
 				state_.excludedPrefixes.erase(it);
 			}
@@ -622,8 +550,7 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 		saveExcludedProcesses(baseDir_, state_);
 		loadExcludedProcesses(baseDir_, state_);
 		refreshRunningProcessList();
-		QMessageBox::information(&win, "Saved",
-					 "Excluded processes saved.");
+		QMessageBox::information(&win, "Saved", "Excluded processes saved.");
 	});
 
 	connect(closeBtn, &QPushButton::clicked, &win, &QDialog::accept);
@@ -646,8 +573,7 @@ void TwitchAutoTitleDialog::doTwitchUpdate(const std::string &game)
 		category = state_.twitchCategories.at(game);
 	}
 
-	std::string customText =
-		customTextEdit_->text().trimmed().toStdString();
+	std::string customText = customTextEdit_->text().trimmed().toStdString();
 	std::string title = formatTitle(state_.baseTemplate, game);
 	if (!customText.empty()) {
 		title += " " + customText;
@@ -657,18 +583,12 @@ void TwitchAutoTitleDialog::doTwitchUpdate(const std::string &game)
 	bool catOk = twitchClient_.updateStreamCategory(category);
 
 	if (!titleOk) {
-		setStatus(
-			"Title update failed — check credentials / token.",
-			"red");
+		setStatus("Title update failed — check credentials / token.", "red");
 	} else if (!catOk) {
-		setStatus(
-			QString("Title updated, but category failed: %1")
-				.arg(QString::fromStdString(title)),
-			"orange");
+		setStatus(QString("Title updated, but category failed: %1").arg(QString::fromStdString(title)),
+			  "orange");
 	} else {
-		setStatus(
-			QString("Updated: %1").arg(
-				QString::fromStdString(title)));
+		setStatus(QString("Updated: %1").arg(QString::fromStdString(title)));
 	}
 
 	updatingTwitch_ = false;
@@ -678,15 +598,12 @@ void TwitchAutoTitleDialog::refreshMappingsList()
 {
 	mappingsList_->clear();
 	for (const auto &[game, proc] : state_.processNames) {
-		const std::string &cat =
-			state_.twitchCategories.count(game)
-				? state_.twitchCategories.at(game)
-				: std::string{};
-		mappingsList_->addItem(
-			QString("%1 -> %2   [Category: %3]")
-				.arg(QString::fromStdString(game))
-				.arg(QString::fromStdString(proc))
-				.arg(QString::fromStdString(cat)));
+		const std::string &cat = state_.twitchCategories.count(game) ? state_.twitchCategories.at(game)
+									     : std::string{};
+		mappingsList_->addItem(QString("%1 -> %2   [Category: %3]")
+					       .arg(QString::fromStdString(game))
+					       .arg(QString::fromStdString(proc))
+					       .arg(QString::fromStdString(cat)));
 	}
 }
 
@@ -695,21 +612,15 @@ void TwitchAutoTitleDialog::refreshRunningProcessList()
 	auto procs = getRunningProcessNames();
 
 	procs.erase(std::remove_if(procs.begin(), procs.end(),
-				   [this](const std::string &name) {
-					   return isExcludedProcess(name,
-								    state_);
-				   }),
+				   [this](const std::string &name) { return isExcludedProcess(name, state_); }),
 		    procs.end());
 
-	std::sort(procs.begin(), procs.end(),
-		  [](const std::string &a, const std::string &b) {
-			  std::string la = a, lb = b;
-			  std::transform(la.begin(), la.end(), la.begin(),
-					 ::tolower);
-			  std::transform(lb.begin(), lb.end(), lb.begin(),
-					 ::tolower);
-			  return la < lb;
-		  });
+	std::sort(procs.begin(), procs.end(), [](const std::string &a, const std::string &b) {
+		std::string la = a, lb = b;
+		std::transform(la.begin(), la.end(), la.begin(), ::tolower);
+		std::transform(lb.begin(), lb.end(), lb.begin(), ::tolower);
+		return la < lb;
+	});
 	procs.erase(std::unique(procs.begin(), procs.end()), procs.end());
 
 	processListWidget_->clear();
@@ -718,12 +629,10 @@ void TwitchAutoTitleDialog::refreshRunningProcessList()
 	}
 }
 
-void TwitchAutoTitleDialog::setStatus(const QString &text,
-				      const QString &color)
+void TwitchAutoTitleDialog::setStatus(const QString &text, const QString &color)
 {
 	statusLabel_->setText(text);
-	statusLabel_->setStyleSheet(
-		QString("color: %1;").arg(color));
+	statusLabel_->setStyleSheet(QString("color: %1;").arg(color));
 }
 
 void TwitchAutoTitleDialog::applyTheme()
@@ -751,46 +660,39 @@ void TwitchAutoTitleDialog::applyTheme()
 void TwitchAutoTitleDialog::checkForUpdate()
 {
 	auto *manager = new QNetworkAccessManager(this);
-	QNetworkRequest request{
-		QUrl(QString("https://api.github.com/repos/%1/"
-			     "releases/latest")
-			     .arg(kGithubRepo))};
+	QNetworkRequest request{QUrl(QString("https://api.github.com/repos/%1/"
+					     "releases/latest")
+					     .arg(kGithubRepo))};
 	request.setRawHeader("Accept", "application/vnd.github+json");
-	request.setHeader(QNetworkRequest::UserAgentHeader,
-			  "twitch-auto-title-obs-plugin");
+	request.setHeader(QNetworkRequest::UserAgentHeader, "twitch-auto-title-obs-plugin");
 
 	QNetworkReply *reply = manager->get(request);
-	connect(reply, &QNetworkReply::finished, this,
-		[this, reply, manager]() {
-			reply->deleteLater();
-			manager->deleteLater();
+	connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
+		reply->deleteLater();
+		manager->deleteLater();
 
-			if (reply->error() != QNetworkReply::NoError) {
-				return;
-			}
+		if (reply->error() != QNetworkReply::NoError) {
+			return;
+		}
 
-			QJsonDocument doc = QJsonDocument::fromJson(
-				reply->readAll());
-			QString tag =
-				doc.object()["tag_name"].toString();
+		QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+		QString tag = doc.object()["tag_name"].toString();
 
-			auto latest = parseVersion(tag);
-			auto current = parseVersion(kAppVersion);
+		auto latest = parseVersion(tag);
+		auto current = parseVersion(kAppVersion);
 
-			if (latest > current) {
-				QString latestStr =
-					QString("%1.%2.%3")
-						.arg(std::get<0>(latest))
-						.arg(std::get<1>(latest))
-						.arg(std::get<2>(latest));
-				QMessageBox::information(
-					this, "Update Available",
-					QString("A new version %1 is available "
-						"(current: %2).\n"
-						"Visit the GitHub releases "
-						"page to download it.")
-						.arg(latestStr)
-						.arg(kAppVersion));
-			}
-		});
+		if (latest > current) {
+			QString latestStr = QString("%1.%2.%3")
+						    .arg(std::get<0>(latest))
+						    .arg(std::get<1>(latest))
+						    .arg(std::get<2>(latest));
+			QMessageBox::information(this, "Update Available",
+						 QString("A new version %1 is available "
+							 "(current: %2).\n"
+							 "Visit the GitHub releases "
+							 "page to download it.")
+							 .arg(latestStr)
+							 .arg(kAppVersion));
+		}
+	});
 }

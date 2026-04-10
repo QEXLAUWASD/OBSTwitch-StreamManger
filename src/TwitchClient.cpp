@@ -17,8 +17,7 @@
 
 #include <obs-module.h>
 
-TwitchClient::TwitchClient(std::string clientId, std::string accessToken,
-			   std::string streamerId, QObject *parent)
+TwitchClient::TwitchClient(std::string clientId, std::string accessToken, std::string streamerId, QObject *parent)
 	: QObject(parent),
 	  clientId_(std::move(clientId)),
 	  accessToken_(std::move(accessToken)),
@@ -26,9 +25,7 @@ TwitchClient::TwitchClient(std::string clientId, std::string accessToken,
 {
 }
 
-void TwitchClient::setCredentials(std::string clientId,
-				  std::string accessToken,
-				  std::string streamerId)
+void TwitchClient::setCredentials(std::string clientId, std::string accessToken, std::string streamerId)
 {
 	clientId_ = std::move(clientId);
 	accessToken_ = std::move(accessToken);
@@ -37,38 +34,27 @@ void TwitchClient::setCredentials(std::string clientId,
 
 bool TwitchClient::hasCredentials() const
 {
-	return !clientId_.empty() && !accessToken_.empty() &&
-	       !streamerId_.empty();
+	return !clientId_.empty() && !accessToken_.empty() && !streamerId_.empty();
 }
 
-static void applyHelixHeaders(QNetworkRequest &request,
-			      const std::string &clientId,
-			      const std::string &accessToken)
+static void applyHelixHeaders(QNetworkRequest &request, const std::string &clientId, const std::string &accessToken)
 {
-	request.setHeader(QNetworkRequest::ContentTypeHeader,
-			  "application/json");
-	request.setRawHeader("Client-ID",
-			     QByteArray::fromStdString(clientId));
-	request.setRawHeader(
-		"Authorization",
-		"Bearer " + QByteArray::fromStdString(accessToken));
+	request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+	request.setRawHeader("Client-ID", QByteArray::fromStdString(clientId));
+	request.setRawHeader("Authorization", "Bearer " + QByteArray::fromStdString(accessToken));
 }
 
 static int sendAndWait(QNetworkReply *reply)
 {
 	QEventLoop loop;
-	QObject::connect(reply, &QNetworkReply::finished, &loop,
-			 &QEventLoop::quit);
+	QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
 	loop.exec();
 
 	if (reply->error() != QNetworkReply::NoError) {
-		blog(LOG_WARNING,
-		     "[twitch-auto-title] Network error: %s",
-		     reply->errorString().toUtf8().constData());
+		blog(LOG_WARNING, "[twitch-auto-title] Network error: %s", reply->errorString().toUtf8().constData());
 	}
 
-	return reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
-		.toInt();
+	return reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 }
 
 bool TwitchClient::updateStreamTitle(const std::string &title)
@@ -87,20 +73,16 @@ bool TwitchClient::updateStreamTitle(const std::string &title)
 	payload["title"] = QString::fromStdString(title);
 	QByteArray body = QJsonDocument(payload).toJson();
 
-	QNetworkReply *reply =
-		networkManager_.sendCustomRequest(request, "PATCH", body);
+	QNetworkReply *reply = networkManager_.sendCustomRequest(request, "PATCH", body);
 	int status = sendAndWait(reply);
 	QByteArray responseBody = reply->readAll();
 	reply->deleteLater();
 
 	if (status == 204) {
-		blog(LOG_INFO, "[twitch-auto-title] Title updated: %s",
-		     title.c_str());
+		blog(LOG_INFO, "[twitch-auto-title] Title updated: %s", title.c_str());
 		return true;
 	}
-	blog(LOG_WARNING,
-	     "[twitch-auto-title] Failed to update title: HTTP %d — %s",
-	     status, responseBody.constData());
+	blog(LOG_WARNING, "[twitch-auto-title] Failed to update title: HTTP %d — %s", status, responseBody.constData());
 	return false;
 }
 
@@ -125,19 +107,14 @@ bool TwitchClient::updateStreamCategory(const std::string &category)
 	searchReply->deleteLater();
 
 	if (searchStatus != 200) {
-		blog(LOG_WARNING,
-		     "[twitch-auto-title] Game search failed: HTTP %d",
-		     searchStatus);
+		blog(LOG_WARNING, "[twitch-auto-title] Game search failed: HTTP %d", searchStatus);
 		return false;
 	}
 
-	QJsonArray games =
-		QJsonDocument::fromJson(searchBody).object()["data"].toArray();
+	QJsonArray games = QJsonDocument::fromJson(searchBody).object()["data"].toArray();
 
 	if (games.isEmpty()) {
-		blog(LOG_WARNING,
-		     "[twitch-auto-title] Game '%s' not found on Twitch",
-		     category.c_str());
+		blog(LOG_WARNING, "[twitch-auto-title] Game '%s' not found on Twitch", category.c_str());
 		if (category != "Just Chatting") {
 			return updateStreamCategory("Just Chatting");
 		}
@@ -157,27 +134,21 @@ bool TwitchClient::updateStreamCategory(const std::string &category)
 	payload["game_id"] = gameId;
 	QByteArray patchBody = QJsonDocument(payload).toJson();
 
-	QNetworkReply *patchReply =
-		networkManager_.sendCustomRequest(patchRequest, "PATCH",
-						  patchBody);
+	QNetworkReply *patchReply = networkManager_.sendCustomRequest(patchRequest, "PATCH", patchBody);
 	int patchStatus = sendAndWait(patchReply);
 	QByteArray patchResponseBody = patchReply->readAll();
 	patchReply->deleteLater();
 
 	if (patchStatus == 204) {
-		blog(LOG_INFO,
-		     "[twitch-auto-title] Category updated to: %s",
-		     category.c_str());
+		blog(LOG_INFO, "[twitch-auto-title] Category updated to: %s", category.c_str());
 		return true;
 	}
-	blog(LOG_WARNING,
-	     "[twitch-auto-title] Failed to update category: HTTP %d — %s",
-	     patchStatus, patchResponseBody.constData());
+	blog(LOG_WARNING, "[twitch-auto-title] Failed to update category: HTTP %d — %s", patchStatus,
+	     patchResponseBody.constData());
 	return false;
 }
 
-std::string formatTitle(const std::string &titleTemplate,
-			const std::string &game)
+std::string formatTitle(const std::string &titleTemplate, const std::string &game)
 {
 	std::time_t now = std::time(nullptr);
 	char dateBuf[16] = {};
@@ -188,8 +159,7 @@ std::string formatTitle(const std::string &titleTemplate,
 
 	std::string result = titleTemplate;
 
-	auto replaceAll = [](std::string &str, const std::string &from,
-			     const std::string &to) {
+	auto replaceAll = [](std::string &str, const std::string &from, const std::string &to) {
 		size_t pos = 0;
 		while ((pos = str.find(from, pos)) != std::string::npos) {
 			str.replace(pos, from.size(), to);
