@@ -36,8 +36,8 @@
             "bundleId": "com.example.twitch-titleupdater"
         }
     },
-    "name": "TwitchOBSTitleUpdater",
-    "displayName": "Twitch OBS Title Updater",
+    "name": "Twitch-TitleUpdater",
+    "displayName": "Twitch Title Updater",
     "version": "1.0.0",
     "author": "LiuLian",
     "website": "",
