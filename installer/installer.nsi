@@ -104,7 +104,7 @@ Section "!${PRODUCT_NAME} Plugin" SecPlugin
   WriteRegStr   HKLM "${UNINST_REG_KEY}" "InstallLocation"      "$INSTDIR"
   WriteRegStr   HKLM "${UNINST_REG_KEY}" "DisplayVersion"       "${PRODUCT_VERSION}"
   WriteRegStr   HKLM "${UNINST_REG_KEY}" "Publisher"            "LiuLian"
-  WriteRegStr   HKLM "${UNINST_REG_KEY}" "URLInfoAbout"         "https://github.com/QEXLAUWASD/OBSTwitch-StreamManger"
+  WriteRegStr   HKLM "${UNINST_REG_KEY}" "URLInfoAbout"         "https://github.com/QEXLAUWASD/RETwitch-StreamManger"
   WriteRegDWORD HKLM "${UNINST_REG_KEY}" "NoModify"             1
   WriteRegDWORD HKLM "${UNINST_REG_KEY}" "NoRepair"             1
 SectionEnd
