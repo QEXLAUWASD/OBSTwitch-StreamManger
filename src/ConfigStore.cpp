@@ -78,7 +78,8 @@ bool loadConfig(const std::string &baseDir, AppState &state)
 
 		// Validate game and process names
 		if (gameName.length() > 100 || procName.length() > 200) {
-			blog(LOG_WARNING, "[twitch-auto-title] Skipping invalid entry: %s", gameName.toStdString().c_str());
+			blog(LOG_WARNING, "[twitch-auto-title] Skipping invalid entry: %s",
+			     gameName.toStdString().c_str());
 			continue;
 		}
 
@@ -215,7 +216,7 @@ bool saveExcludedProcesses(const std::string &baseDir, const AppState &state)
 }
 
 bool addOrUpdateGame(const std::string &baseDir, AppState &state, const std::string &gameName,
-                     const std::string &processName, const std::string &twitchCategory)
+		     const std::string &processName, const std::string &twitchCategory)
 {
 	// Validate input lengths and characters
 	if (gameName.empty() || processName.empty()) {
