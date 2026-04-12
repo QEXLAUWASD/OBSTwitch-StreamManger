@@ -4,13 +4,13 @@
 #pragma once
 
 #include <string>
-
-struct AppState;
+#include <optional>
 
 struct TwitchCredentials {
 	std::string clientId;
 	std::string accessToken;
 	std::string streamerId;
+	std::optional<std::string> encryptedToken;  // Optional encrypted token (future enhancement)
 
 	bool isValid() const { return !clientId.empty() && !accessToken.empty() && !streamerId.empty(); }
 };

@@ -315,6 +315,13 @@ void TwitchAutoTitleDialog::onAddOrUpdateMapping()
 		QMessageBox::warning(this, "Missing", "Please provide a Game Name.");
 		return;
 	}
+
+	// Validate game name length and characters
+	if (game.length() > 50 || game.contains(QRegularExpression("[^a-zA-Z0-9_\-\s.]"))) {
+		QMessageBox::warning(this, "Invalid Input", "Game name must be 1-50 characters and contain only letters, numbers, underscores, hyphens, spaces, or periods.");
+		return;
+	}
+
 	if (selected.isEmpty()) {
 		QMessageBox::warning(this, "Missing", "Please select a Process from the list.");
 		return;
@@ -567,6 +574,13 @@ void TwitchAutoTitleDialog::onOpenExclusionsEditor()
 void TwitchAutoTitleDialog::doTwitchUpdate(const std::string &game)
 {
 	updatingTwitch_ = true;
+
+	// Validate game name before sending to Twitch API
+	if (game.empty() || game.length() > 100) {
+		QMessageBox::warning(this, "Invalid Game", "Game name is invalid or too long.");
+		updatingTwitch_ = false;
+		return;
+	}
 
 	std::string category = "Just Chatting";
 	if (state_.twitchCategories.count(game)) {
