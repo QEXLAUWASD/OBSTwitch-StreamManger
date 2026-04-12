@@ -317,7 +317,7 @@ void TwitchAutoTitleDialog::onAddOrUpdateMapping()
 	}
 
 	// Validate game name length and characters
-	if (game.length() > 50 || game.contains(QRegularExpression("[^a-zA-Z0-9_\-\s.]"))) {
+	if (game.length() > 50 || game.contains(QRegularExpression("[^a-zA-Z0-9_\\-\\s.]"))) {
 		QMessageBox::warning(this, "Invalid Input", "Game name must be 1-50 characters and contain only letters, numbers, underscores, hyphens, spaces, or periods.");
 		return;
 	}
