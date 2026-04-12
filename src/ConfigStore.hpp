@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include "AppState.hpp" // Required for AppState type
@@ -19,6 +20,7 @@ struct TwitchCredentials {
 std::string getBaseDir();
 
 // AppState is forward-declared in AppState.hpp - no need to redeclare here
+bool loadConfig(const std::string &baseDir, AppState &state);
 bool saveConfig(const std::string &baseDir, const AppState &state);
 
 bool loadExcludedProcesses(const std::string &baseDir, AppState &state);
