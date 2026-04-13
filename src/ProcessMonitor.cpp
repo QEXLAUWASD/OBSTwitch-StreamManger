@@ -9,7 +9,6 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#include <psapi.h>
 #endif
 
 static std::string strToLower(std::string s)
@@ -55,14 +54,16 @@ std::vector<std::string> getRunningProcessNames()
 			continue;
 		}
 
-		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processIds[i]);
+		HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processIds[i]);
 		if (!hProcess) {
 			continue;
 		}
 
-		CHAR procName[MAX_PATH] = {};
-		if (GetModuleBaseNameA(hProcess, nullptr, procName, MAX_PATH) > 0) {
-			names.emplace_back(procName);
+		CHAR fullPath[MAX_PATH] = {};
+		DWORD size = MAX_PATH;
+		if (QueryFullProcessImageNameA(hProcess, 0, fullPath, &size)) {
+			const char *baseName = strrchr(fullPath, '\\');
+			names.emplace_back(baseName ? baseName + 1 : fullPath);
 		}
 
 		CloseHandle(hProcess);
