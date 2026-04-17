@@ -82,7 +82,7 @@ bool TwitchClient::updateStreamTitle(const std::string &title)
 	}
 	lastRequestTime = now;
 
-	lock.release();
+	lock.unlock();
 
 	QUrl url(QString("https://api.twitch.tv/helix/channels"
 			 "?broadcaster_id=%1")

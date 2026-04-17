@@ -701,7 +701,7 @@ void TwitchAutoTitleDialog::checkForUpdate()
 	}
 	lastRequestTime = now;
 
-	lock.release();
+	lock.unlock();
 
 	QNetworkReply *reply = manager->get(request);
 	connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
