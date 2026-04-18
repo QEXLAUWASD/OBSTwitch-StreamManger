@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-inline constexpr const char *kAppVersion = "1.2.0";
+inline constexpr const char *kAppVersion = "1.2.1";
 inline constexpr const char *kDefaultGithubRepo = "QEXLAUWASD/Twitch-StreamManger";
 
 struct AppState {
